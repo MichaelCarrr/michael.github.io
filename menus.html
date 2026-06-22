@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Menus — Black Blox Eatz</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
+    <style>
+        body { background: #000000; color: #f0ece4; font-family: Inter, system-ui, sans-serif; margin:0; min-height:100vh; }
+        .container { width:100%; max-width:none; margin:0 auto; padding:24px 28px 28px; position:relative; min-height:100vh; }
+        a.logo { color:#f0ece4; text-decoration:none; font-weight:700; font-size:1.25rem; font-family: 'Playfair Display', serif; font-style: italic }
+        h1 { font-family: 'Playfair Display', serif; font-size:2.4rem; margin:18px 0 22px; color:#f0ece4 }
+        .grid { display:grid; gap:8px; }
+        .card { background:#111; border-radius:18px; padding:10px; border:1px solid #222; display:flex; justify-content:center; align-items:center; overflow:hidden; }
+        .card img { width:100%; max-height: calc(100vh - 220px); object-fit:contain; border-radius:12px; cursor:pointer; transition:transform .25s ease; display:block; }
+        .card img:focus, .card img:hover { transform:scale(1.02) }
+        .section { margin:16px 0; display:flex; flex-direction:column; }
+        .section h2 { color:#c9a84c; margin-bottom:16px; font-size:1.35rem; }
+
+        /* Top-left buttons */
+        .top-buttons { display:flex; gap:12px; margin:0 0 12px; align-items:center; flex-wrap:wrap; }
+        .top-buttons .btn { display:inline-block; padding:10px 14px; border-radius:999px; text-decoration:none; font-weight:600; font-size:0.95rem; }
+        .top-buttons .btn.primary { background:#1b1b1b; color:#fff }
+        .top-buttons .btn.ghost { background:transparent; color:#f0ece4; border:2px solid rgba(255,255,255,0.08) }
+
+        /* Two-column layout for Food + Drinks */
+        .menus-row { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; align-items:stretch; }
+        @media (max-width:1000px){ .menus-row { grid-template-columns: 1fr; } }
+
+        /* Lightbox */
+        .lightbox { position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.92); z-index:2000; padding:20px; }
+        .lightbox.open { display:flex }
+        .lightbox img { max-width:100%; max-height:100%; border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,0.8); transition: transform 180ms ease; transform-origin:center center; touch-action:none; }
+        .lightbox img.zoomed { cursor: grab; }
+        .lightbox .close { position:absolute; top:18px; right:20px; color:#fff; font-size:28px; text-decoration:none; }
+        .lightbox .zoom-hint { position:absolute; bottom:20px; left:50%; transform:translateX(-50%); color:#ddd; font-size:0.95rem; opacity:0.85; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top-buttons">
+            <a class="btn primary" href="bbe.html">Back to main page</a>
+            <a class="btn ghost" href="contact.html">Contact Us</a>
+        </div>
+        <h1>Menus</h1>
+
+        <div class="menus-row">
+            <section id="food" class="section">
+                <h2>Food Menu</h2>
+                <div class="grid">
+                    <div class="card"><img class="menu-thumb" src="Images/Menus/food.webp" alt="Food menu 1" loading="lazy" tabindex="0" /></div>
+                </div>
+            </section>
+
+            <section id="drinks" class="section">
+                <h2>Drink Menu</h2>
+                <div class="grid">
+                    <div class="card"><img class="menu-thumb" src="Images/Menus/unnamed.webp" alt="Food menu 2" loading="lazy" tabindex="0" /></div>
+                </div>
+            </section>
+        </div>
+
+    </div>
+    
+    <div class="lightbox" id="lightbox" aria-hidden="true">
+        <a href="#" class="close" id="lb-close" aria-label="Close">✕</a>
+        <img id="lb-img" src="" alt="" />
+    </div>
+
+    <script>
+        (function(){
+            const thumbs = document.querySelectorAll('.menu-thumb');
+            const lb = document.getElementById('lightbox');
+            const lbImg = document.getElementById('lb-img');
+            const lbClose = document.getElementById('lb-close');
+
+            let isZoomed = false;
+            let scale = 2;
+            let dragging = false;
+            let startX = 0, startY = 0;
+            let translateX = 0, translateY = 0;
+
+            function setTransform(){
+                if(isZoomed){
+                    lbImg.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+                } else {
+                    lbImg.style.transform = '';
+                }
+            }
+
+            function open(src, alt){
+                isZoomed = false; translateX = 0; translateY = 0;
+                lbImg.classList.remove('zoomed');
+                setTransform();
+                lbImg.src = src;
+                lbImg.alt = alt || '';
+                lb.classList.add('open');
+                lb.setAttribute('aria-hidden','false');
+                document.body.style.overflow = 'hidden';
+                lbClose.focus();
+            }
+            function close(){
+                lb.classList.remove('open');
+                lb.setAttribute('aria-hidden','true');
+                lbImg.src = '';
+                isZoomed = false;
+                translateX = 0; translateY = 0;
+                setTransform();
+                document.body.style.overflow = '';
+            }
+
+            thumbs.forEach(t => {
+                t.addEventListener('click', e => open(t.src, t.alt));
+                t.addEventListener('keydown', e => { if(e.key==='Enter' || e.key===' ') { e.preventDefault(); open(t.src,t.alt); } });
+            });
+
+            // toggle zoom on image click
+            lbImg.addEventListener('click', function(e){
+                if(!isZoomed){
+                    isZoomed = true;
+                    lbImg.classList.add('zoomed');
+                    translateX = 0; translateY = 0;
+                    setTransform();
+                } else {
+                    isZoomed = false;
+                    lbImg.classList.remove('zoomed');
+                    translateX = 0; translateY = 0;
+                    setTransform();
+                }
+            });
+
+            // drag to pan when zoomed
+            lbImg.addEventListener('pointerdown', function(e){
+                if(!isZoomed) return;
+                dragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                lbImg.setPointerCapture(e.pointerId);
+                lbImg.style.cursor = 'grabbing';
+            });
+            lbImg.addEventListener('pointermove', function(e){
+                if(!dragging) return;
+                const dx = (e.clientX - startX) / scale;
+                const dy = (e.clientY - startY) / scale;
+                lbImg.style.transform = `scale(${scale}) translate(${translateX + dx}px, ${translateY + dy}px)`;
+            });
+            lbImg.addEventListener('pointerup', function(e){
+                if(!dragging) return;
+                const dx = (e.clientX - startX) / scale;
+                const dy = (e.clientY - startY) / scale;
+                translateX += dx; translateY += dy;
+                dragging = false;
+                lbImg.style.cursor = 'grab';
+                try{ lbImg.releasePointerCapture(e.pointerId); }catch(e){}
+            });
+            lbImg.addEventListener('pointercancel', function(e){
+                dragging=false;
+                lbImg.style.cursor = 'grab';
+            });
+
+            lbClose.addEventListener('click', e => { e.preventDefault(); close(); });
+            lb.addEventListener('click', e => { if(e.target===lb) close(); });
+            document.addEventListener('keydown', e => { if(e.key==='Escape' && lb.classList.contains('open')) close(); });
+        })();
+    </script>
+</body>
+</html>
